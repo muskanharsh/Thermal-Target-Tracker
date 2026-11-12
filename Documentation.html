@@ -1,0 +1,1104 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thermal Target Tracker Documentation</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root { --bg:#e5eae9; --panel:#f7f9f8; --ink:#121e1e; --muted:#566765; --line:#c3cecb; --accent:#0e6f78;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif; --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0b1110; --panel:#131b1a; --ink:#dfe8e6; --muted:#90a19e; --line:#26322f; --accent:#3fc1c9; color-scheme:dark; } }
+:root[data-theme="dark"] { --bg:#0b1110; --panel:#131b1a; --ink:#dfe8e6; --muted:#90a19e; --line:#26322f; --accent:#3fc1c9; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:16px; line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); padding-block:24px 64px; }
+.layout { max-width:1180px; margin:0 auto; display:grid; grid-template-columns:250px minmax(0,1fr); gap:32px; align-items:start; }
+@media (max-width:860px) { .layout { grid-template-columns:minmax(0,1fr); } nav { position:static !important; max-height:none !important; } }
+nav { position:sticky; top:16px; max-height:calc(100vh - 32px); overflow-y:auto; background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:14px 16px; font-size:14px; }
+nav .label { font-family:var(--f-mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+nav ol { margin:8px 0 0; padding-left:0; list-style:none; display:grid; gap:4px; }
+nav a { color:var(--ink); text-decoration:none; } nav a:hover { color:var(--accent); text-decoration:underline; }
+nav .back { display:inline-block; margin-top:12px; font-weight:600; color:var(--accent); }
+main { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:24px clamp(16px,4vw,40px); min-width:0; }
+main > * { max-width:76ch; }
+h1 { font-family:var(--f-display); font-weight:700; font-size:clamp(32px,5vw,46px); line-height:1.05; margin:0 0 8px; text-wrap:balance; }
+h2 { font-family:var(--f-display); font-weight:600; font-size:28px; line-height:1.1; margin:40px 0 10px; padding-top:12px; border-top:1px solid var(--line); text-wrap:balance; }
+h3 { font-size:17px; margin:24px 0 6px; }
+p, li { max-width:76ch; }
+a { color:var(--accent); }
+code { font-family:var(--f-mono); font-size:.88em; background:var(--bg); padding:1px 5px; border-radius:3px; }
+hr { border:0; border-top:1px solid var(--line); margin:24px 0; }
+.tw { overflow-x:auto; max-width:100%; margin:12px 0; }
+table { border-collapse:collapse; font-size:14px; min-width:100%; }
+th, td { text-align:left; padding:7px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { font-weight:600; background:var(--bg); }
+td { font-variant-numeric:tabular-nums; }
+strong { font-weight:600; }
+</style></head><body>
+<div class="layout">
+<nav aria-label="Contents"><span class="label">Contents</span><ol><li><a href="#0-how-to-use-this-document">0. How to use this document</a></li><li><a href="#1-the-project-in-30-seconds">1. The project in 30 seconds</a></li><li><a href="#2-the-problem">2. The problem</a></li><li><a href="#3-is-it-new-what-did-i-do-ownership-honestly">3. Is it new? What did I do? (Ownership, honestly)</a></li><li><a href="#4-choosing-the-idea">4. Choosing the idea</a></li><li><a href="#5-the-data-hit-uav">5. The data: HIT-UAV</a></li><li><a href="#6-system-overview">6. System overview</a></li><li><a href="#7-every-step-in-detail">7. Every step in detail</a></li><li><a href="#8-measurements-and-results">8. Measurements and results</a></li><li><a href="#9-mistakes-found-and-fixed">9. Mistakes found and fixed</a></li><li><a href="#10-limitations-say-these-before-anyone-asks">10. Limitations (say these before anyone asks)</a></li><li><a href="#11-the-five-flights-what-each-one-shows">11. The five flights — what each one shows</a></li><li><a href="#12-how-to-demo-and-present">12. How to demo and present</a></li><li><a href="#13-question-bank">13. Question bank</a></li><li><a href="#14-glossary">14. Glossary</a></li><li><a href="#15-your-plan-from-tomorrow">15. Your plan from tomorrow</a></li><li><a href="#16-where-to-change-things">16. Where to change things</a></li><li><a href="#17-sources">17. Sources</a></li></ol><a class="back" href="Thermal_Target_Tracker.html">← Back to the tracker</a></nav>
+<main><h1 id="thermal-target-tracker-complete-documentation">Thermal Target Tracker — Complete Documentation</h1>
+<p>Everything about this POC in one place: what it is, why it exists, how every part works, the exact settings, the results, the mistakes, the limits, and answers to the questions people ask.</p>
+<hr />
+<h2 id="0-how-to-use-this-document">0. How to use this document</h2>
+<ul>
+<li><strong>Before a presentation:</strong> read sections 1, 2, 3 and 12, then practise section 13 (question bank) out loud.</li>
+<li><strong>To understand the system:</strong> read sections 6 and 7 with the portal open, using <strong>Take the tour</strong>.</li>
+<li><strong>To answer "what are the numbers?":</strong> section 8.</li>
+<li><strong>To answer "what's wrong with it?":</strong> sections 9 and 10.</li>
+<li><strong>What to do next:</strong> section 15 (day-by-day plan).</li>
+</ul>
+<hr />
+<h2 id="1-the-project-in-30-seconds">1. The project in 30 seconds</h2>
+<p><strong>One line:</strong> Other trackers tell you what they saw. Mine also tells you what it might have missed.</p>
+<p><strong>Thirty-second version:</strong> A drone's thermal camera AI marks people and vehicles for the operator. When conditions get bad — a fast turn, low thermal contrast, high altitude, blur — it quietly misses targets, and the screen simply looks empty. I built a tracker on real thermal drone data that follows moving people and vehicles, and that also reports its blind spots: where a target was last seen, which parts of the flight could not be trusted and why, and which parts of the ground need a second look. I measured whether those warnings match real losses.</p>
+<p><strong>What it is not:</strong> It is not a new detector or a new tracking algorithm. Those are existing tools. It is not tested on a real drone or on company footage yet.</p>
+<hr />
+<h2 id="2-the-problem">2. The problem</h2>
+<h3 id="21-how-a-camera-drone-finds-targets">2.1 How a camera drone finds targets</h3>
+<ol>
+<li>A thermal camera on the drone sees heat. People and engines are warmer than the ground, so they stand out.</li>
+<li>An AI detector on the drone (or ground station) draws a box around each person or vehicle.</li>
+<li>An operator watches the marked video, often for hours and often several feeds at once.</li>
+</ol>
+<h3 id="22-what-goes-wrong">2.2 What goes wrong</h3>
+<p>The detector does not fail loudly. It just draws fewer boxes. Common causes:
+- <strong>Thermal crossover</strong> — around dawn and dusk, ground and people reach similar temperatures, so people fade.
+- <strong>Fog, rain, humidity</strong> — water absorbs infrared; the image flattens.
+- <strong>Hot spots</strong> — fires or sun-heated roofs blow out the image; automatic brightness darkens everything else.
+- <strong>Sensor noise</strong> — grain and stripes, worse on cheaper sensors.
+- <strong>Blur and fast turns</strong> — wind, sharp turns or a moving gimbal smear the image.
+- <strong>Altitude</strong> — from 130 m a person is only a few pixels wide.</p>
+<h3 id="23-why-it-matters-for-military-and-security-drones">2.3 Why it matters for military and security drones</h3>
+<ul>
+<li>Missions happen at the worst times: night, dawn, dusk, bad weather.</li>
+<li>Drones fly high to stay safe, which makes targets tiny.</li>
+<li>In surveillance, a <strong>missed person</strong> is the dangerous mistake. A false alarm costs a second look; a miss can cost much more.</li>
+<li>An empty screen looks exactly like an empty area. The operator cannot tell "nobody is there" from "the camera couldn't see".</li>
+</ul>
+<h3 id="24-the-question-this-poc-answers">2.4 The question this POC answers</h3>
+<p><strong>Can a drone's tracker report when and where it was unreliable, and do those warnings match real losses?</strong></p>
+<hr />
+<h2 id="3-is-it-new-what-did-i-do-ownership-honestly">3. Is it new? What did I do? (Ownership, honestly)</h2>
+<h3 id="31-what-already-exists">3.1 What already exists</h3>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>What it is</th>
+<th>Who made it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>YOLOv8</td>
+<td>Object detector</td>
+<td>Ultralytics (open source, AGPL-3.0)</td>
+</tr>
+<tr>
+<td>ByteTrack</td>
+<td>Multi-object tracker</td>
+<td>Zhang et al., 2022 (published method)</td>
+</tr>
+<tr>
+<td>Optical flow, RANSAC homography, frame differencing</td>
+<td>Classic computer-vision methods</td>
+<td>OpenCV library</td>
+</tr>
+<tr>
+<td>HIT-UAV</td>
+<td>Thermal drone dataset</td>
+<td>Harbin Institute of Technology, 2023</td>
+</tr>
+<tr>
+<td>Moving-target tracking as a product feature</td>
+<td>Sold by drone makers</td>
+<td>e.g. ideaForge advertises it</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-what-this-project-adds">3.2 What this project adds</h3>
+<ul>
+<li><strong>The question:</strong> treating "knowing when it's blind" as the goal, not only detection.</li>
+<li><strong>Blind-spot features:</strong> ground-pinned last-seen markers, unreliable periods with causes, a flight reliability report, and a "searched vs actually seen" coverage map with a re-scan list.</li>
+<li><strong>Reliability checks designed for thermal drone video:</strong> six checks, weakest wins, including altitude based on my measured detection rates.</li>
+<li><strong>Measurement:</strong> recall and precision; detection by altitude and day/night; whether warnings match real losses; testing on frames never used for tuning.</li>
+<li><strong>Finding and fixing three mistakes</strong> (section 9) and reporting honest numbers.</li>
+</ul>
+<h3 id="33-how-the-work-was-done">3.3 How the work was done</h3>
+<ul>
+<li>I chose the problem, the direction and the decision rules.</li>
+<li>The code was written with help from an AI assistant (Claude). I am rebuilding the core steps myself and running my own experiments (section 15).</li>
+<li><strong>Say this openly.</strong> A POC proves an idea works in a context; it does not need to invent new technology. Hiding AI help is the real risk.</li>
+</ul>
+<h3 id="34-how-to-say-it-in-one-breath">3.4 How to say it in one breath</h3>
+<p>"The tracking uses published tools. My contribution is making the tracker report its own blind spots and measuring whether those warnings are right, on real thermal drone data."</p>
+<hr />
+<h2 id="4-choosing-the-idea">4. Choosing the idea</h2>
+<h3 id="41-ideas-considered">4.1 Ideas considered</h3>
+<table>
+<thead>
+<tr>
+<th>Idea</th>
+<th>Decision</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fog removal for daylight video</td>
+<td>Dropped</td>
+<td>Daylight camera; well researched; military drones rely on thermal</td>
+</tr>
+<tr>
+<td>Flight-log anomaly detection</td>
+<td>Dropped</td>
+<td>Useful but not visual; harder to demonstrate</td>
+</tr>
+<tr>
+<td>Navigation without GPS</td>
+<td>Dropped</td>
+<td>Needs hardware; too large for two months</td>
+</tr>
+<tr>
+<td>Perception health monitor (single images)</td>
+<td>Became part of this</td>
+<td>The trust checks came from here</td>
+</tr>
+<tr>
+<td><strong>Thermal moving-target tracking with blind-spot reporting</strong></td>
+<td><strong>Chosen</strong></td>
+<td>Thermal is what military drones use; competitors sell tracking; public labelled data; measurable; showable</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-decision-rules-i-used">4.2 Decision rules I used</h3>
+<ol>
+<li>Relevant to military or security drones.</li>
+<li>Doable in about two months.</li>
+<li>Real public data available.</li>
+<li>Results can be measured with numbers.</li>
+<li>Can be shown in a short demo.</li>
+</ol>
+<hr />
+<h2 id="5-the-data-hit-uav">5. The data: HIT-UAV</h2>
+<h3 id="51-facts">5.1 Facts</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Full name</td>
+<td>HIT-UAV: A high-altitude infrared thermal dataset for UAV-based object detection</td>
+</tr>
+<tr>
+<td>From</td>
+<td>Harbin Institute of Technology</td>
+</tr>
+<tr>
+<td>Published</td>
+<td><em>Scientific Data</em> 10, 227 (2023)</td>
+</tr>
+<tr>
+<td>Licence</td>
+<td>CC BY 4.0 (free to use with credit)</td>
+</tr>
+<tr>
+<td>Images</td>
+<td>2,898 thermal images, 640 × 512 pixels</td>
+</tr>
+<tr>
+<td>Split</td>
+<td>2,029 train · 290 validation · 579 test</td>
+</tr>
+<tr>
+<td>Altitude</td>
+<td>60 to 130 m</td>
+</tr>
+<tr>
+<td>Camera angle</td>
+<td>30 to 90 degrees</td>
+</tr>
+<tr>
+<td>Time</td>
+<td>Day and night</td>
+</tr>
+<tr>
+<td>Classes</td>
+<td>Person, Car, Bicycle, Other vehicle (plus "DontCare", ignored)</td>
+</tr>
+<tr>
+<td>Scenes</td>
+<td>Schools, parking lots, roads, playgrounds</td>
+</tr>
+<tr>
+<td>Videos</td>
+<td>5 sample flight videos, 7.5 frames per second</td>
+</tr>
+<tr>
+<td>Link</td>
+<td>https://github.com/suojiashun/HIT-UAV-Infrared-Thermal-Dataset</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-how-to-read-a-file-name">5.2 How to read a file name</h3>
+<p><code>1_130_30_0_03807.jpg</code> → <code>1</code> = night (0 = day), <code>130</code> = altitude in metres, <code>30</code> = camera angle in degrees, then an index. The day/night code comes from the dataset's own <code>scenario.txt</code> (day, night). Video names like <code>60m-40_3.mov</code> give altitude and angle; they do not record day or night.</p>
+<h3 id="53-test-set-contents">5.3 Test-set contents</h3>
+<p>579 images with 4,780 labelled targets. Most are people and cars; "other vehicle" is rare (12 in validation).</p>
+<h3 id="54-limits-of-the-data">5.4 Limits of the data</h3>
+<ul>
+<li>Civilian scenes (campus, roads), not military terrain or vehicles.</li>
+<li>Videos have no tracking labels (no answer key for IDs).</li>
+<li>No recorded weather per video; the bad conditions on still images are simulated.</li>
+<li>It is <strong>not</strong> ideaForge's data. ideaForge is a company that sells tracking.</li>
+</ul>
+<hr />
+<h2 id="6-system-overview">6. System overview</h2>
+<h3 id="61-the-pipeline-per-video-frame">6.1 The pipeline (per video frame)</h3>
+<ol>
+<li><strong>Detect</strong> people and vehicles (YOLOv8 nano).</li>
+<li><strong>Steady the video</strong> (optical flow + RANSAC homography).</li>
+<li><strong>Find what moved</strong> (frame differencing → motion map).</li>
+<li><strong>Track</strong> with IDs (ByteTrack); drop tracks under 1 s.</li>
+<li><strong>Moving or still</strong> (movement over 1.5 s after removing drone motion).</li>
+<li><strong>Reliability</strong> (six checks, weakest wins).</li>
+<li><strong>Blind spots</strong> (last-seen markers, unreliable periods, flight report).</li>
+<li><strong>Coverage map</strong> (where on the ground the drone actually saw, and what to re-scan).</li>
+<li><strong>Display extras</strong> (colour palettes and the hottest spot; these don't change what the AI sees).</li>
+</ol>
+<h3 id="62-which-file-does-what">6.2 Which file does what</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>Language</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arrange dataset</td>
+<td><code>src/prepare_dataset.py</code></td>
+<td>Python</td>
+</tr>
+<tr>
+<td>Train detector</td>
+<td><code>src/train_detector.py</code></td>
+<td>Python</td>
+</tr>
+<tr>
+<td>Score detector</td>
+<td><code>src/eval_detector.py</code></td>
+<td>Python</td>
+</tr>
+<tr>
+<td>Steps 1–4 on videos</td>
+<td><code>src/process.py</code></td>
+<td>Python</td>
+</tr>
+<tr>
+<td>Step 5</td>
+<td><code>src/post.py</code></td>
+<td>Python</td>
+</tr>
+<tr>
+<td>Image checks</td>
+<td><code>src/thermal.js</code>, <code>src/trust_clip.js</code></td>
+<td>JavaScript</td>
+</tr>
+<tr>
+<td>Steps 6–7</td>
+<td><code>src/reliability.py</code></td>
+<td>Python</td>
+</tr>
+<tr>
+<td>Step 8 + hottest spot</td>
+<td><code>src/coverage.py</code></td>
+<td>Python</td>
+</tr>
+<tr>
+<td>Trust-score test on images</td>
+<td><code>src/trust_test.js</code></td>
+<td>JavaScript</td>
+</tr>
+<tr>
+<td>Tracker settings</td>
+<td><code>src/thermal_track.yaml</code></td>
+<td>YAML</td>
+</tr>
+<tr>
+<td>Portal</td>
+<td><code>docs/index.html</code> / <code>Thermal_Target_Tracker.html</code></td>
+<td>HTML + JavaScript</td>
+</tr>
+</tbody>
+</table>
+<p>Results are computed in advance and the portal plays them back in sync with the video.</p>
+<h3 id="63-is-there-a-backend">6.3 Is there a backend?</h3>
+<p>No live backend or server. Everything heavy runs <strong>beforehand</strong> in Python on a laptop: the detector, alignment, tracking, reliability and the coverage map. Each flight's results are saved as one JSON file (boxes, IDs, moving/still, reliability, last-seen markers, report, coverage map) next to its video. The portal is plain HTML and JavaScript: it plays the video and draws the saved results on top, frame by frame. The colour palettes are the only image processing done live in the browser.</p>
+<p>So if someone asks <strong>"is it real-time?"</strong>: <em>"Not yet. It runs offline on recorded flights. Running it live on a drone computer (for example a Jetson) is a next step, and I haven't measured that speed."</em></p>
+<p><strong>The full chain, start to end:</strong>
+<code>HIT-UAV images</code> → <code>prepare_dataset.py</code> → <code>train_detector.py</code> (YOLOv8n) → <code>eval_detector.py</code> (91% / 88%) → for each video: <code>process.py</code> (align, motion map, detect, ByteTrack) → <code>post.py</code> (moving or still) → <code>trust_clip.js</code> (image checks) → <code>reliability.py</code> (score, last-seen, report) → <code>coverage.py</code> (map, re-scan list, hottest spot) → one JSON per flight → portal (HTML + JavaScript).</p>
+<hr />
+<h2 id="7-every-step-in-detail">7. Every step in detail</h2>
+<p>Each step: what it does, why, how (simply), the exact settings, where it fails, and the likely question.</p>
+<h3 id="71-detector-yolov8-nano">7.1 Detector — YOLOv8 nano</h3>
+<ul>
+<li><strong>What:</strong> finds people, cars, bicycles and other vehicles; outputs a box, a class and a confidence (0–1) for each.</li>
+<li><strong>Why nano:</strong> the smallest YOLO (about 3 million parameters). A drone's computer is small; speed matters.</li>
+<li><strong>How (simply):</strong> the network looks at the whole image once, predicts boxes for each area, then merges overlapping boxes for the same object, keeping the most confident (non-maximum suppression).</li>
+<li><strong>Training:</strong> started from a model pre-trained on everyday photos (COCO); fine-tuned on the 2,029 HIT-UAV training images; 8 epochs; image size 640; batch 16; on a laptop-class CPU (about 1.5 hours).</li>
+<li><strong>Validation after training:</strong> precision 0.73, recall 0.79, mAP50 0.78, mAP50-95 0.49. Per class recall: person 0.87, car 0.94, bicycle 0.78, other vehicle 0.58 (only 12 examples).</li>
+<li><strong>Test results:</strong> see section 8.1.</li>
+<li><strong>Settings in use:</strong> confidence 0.25 for scoring images; 0.1 as tracker input (the tracker decides what to keep).</li>
+<li><strong>Fails when:</strong> targets are tiny, low contrast, blurred; can mislabel blurred car parts as "bicycle".</li>
+<li><strong>Likely question:</strong> <em>"Was it tested on images it trained on?"</em> — No. Train, validation and test sets are separate.</li>
+</ul>
+<h3 id="72-steady-the-video-homography">7.2 Steady the video — homography</h3>
+<ul>
+<li><strong>What:</strong> lines up each frame with the previous one so the ground stands still.</li>
+<li><strong>Why:</strong> the drone moves, so otherwise every building and parked car seems to move.</li>
+<li><strong>How (simply):</strong> pick sharp corner points, find where each moved in the next frame, then find the one shift-rotate-tilt rule most points agree with, ignoring wrong matches (RANSAC). Warp the previous frame with that rule.</li>
+<li><strong>Settings:</strong> up to 600 corner points (minimum spacing 8 px); Lucas–Kanade optical flow, window 21 × 21, 3 pyramid levels; RANSAC error limit 2 px.</li>
+<li><strong>Typical values:</strong> about 250–320 points matched per frame; drone shift from under 1 px per frame (steady) to about 26 px (fast turn).</li>
+<li><strong>Fails when:</strong> fast turns (blur, fewer good matches), tall buildings (parallax — the flat-ground assumption breaks).</li>
+<li><strong>Likely question:</strong> <em>"What is RANSAC?"</em> — A method that tries many small random groups of matches and keeps the answer most matches agree with, so a few wrong matches do not spoil it.</li>
+</ul>
+<h3 id="73-find-what-moved-motion-map">7.3 Find what moved — motion map</h3>
+<ul>
+<li><strong>What:</strong> a black-and-white image; white where something moved relative to the ground.</li>
+<li><strong>Why:</strong> the detector knows <em>what</em> something is; the motion map knows <em>whether it moved</em>.</li>
+<li><strong>How:</strong> blur both frames slightly, subtract the aligned previous frame from the current one, keep pixels that changed by more than 16 (on 0–255), clean up specks, ignore a 12 px border.</li>
+<li><strong>Settings:</strong> blur 5 × 5; threshold 16; clean-up 3 × 3 opening, 5 × 5 dilation; motion spots kept if 60–4,000 px in area.</li>
+<li><strong>Unconfirmed motion:</strong> white spots the detector did not confirm are shown as dashed green boxes ("Raw motion" button).</li>
+<li><strong>Fails when:</strong> trees in wind, heat shimmer, alignment errors at edges.</li>
+<li><strong>Likely question:</strong> <em>"Why not only the motion map?"</em> — It lights up leaves and shimmer too; the detector filters those out, and also finds people standing still.</li>
+</ul>
+<h3 id="74-track-bytetrack">7.4 Track — ByteTrack</h3>
+<ul>
+<li><strong>What:</strong> links boxes frame to frame so each target keeps one ID.</li>
+<li><strong>How (simply):</strong> predict where each track will be (Kalman filter), match predictions with new boxes by overlap (IoU), give low-confidence boxes a second chance to match leftover tracks (the "Byte" idea), start new IDs for unmatched confident boxes, keep lost tracks for a while.</li>
+<li><strong>Settings (<code>thermal_track.yaml</code>):</strong> high threshold 0.3, low 0.1, new-track threshold 0.4, memory 45 frames (about 6 s), match threshold 0.9.</li>
+<li><strong>Extra rule:</strong> tracks shorter than 1 s are dropped as noise.</li>
+<li><strong>Fails when:</strong> people walk close together (IDs swap), targets leave and re-enter view, blur.</li>
+<li><strong>Likely question:</strong> <em>"Why 201 IDs on the running track?"</em> — Many people enter and leave the view over 2+ minutes, and IDs break when people overlap. Without an answer key the number of mistakes is not measured yet.</li>
+</ul>
+<h3 id="75-moving-or-still">7.5 Moving or still</h3>
+<ul>
+<li><strong>What:</strong> decides whether each target is moving across the ground.</li>
+<li><strong>How:</strong> take where the target was 1.5 s ago, carry that point forward through every frame's camera correction, compare with where it is now.</li>
+<li><strong>Rule:</strong> moving if it travelled more than <code>max(6 px, half the box's smaller side) + 6% of the total drone shift in that window</code>; the decision must hold for 3 frames before it changes.</li>
+<li><strong>Speed shown:</strong> pixels per second in the image (not metres; the camera's field of view is not published).</li>
+<li><strong>Why 1.5 s:</strong> small box wobble does not add up over time; real movement does (see mistake 1, section 9).</li>
+<li><strong>Fails when:</strong> very fast turns (a few parked cars can briefly flip to "moving"; the portal warns "turning fast, uncertain").</li>
+</ul>
+<h3 id="76-reliability-six-checks">7.6 Reliability — six checks</h3>
+<p>Each check gives 0–100. The <strong>weakest</strong> sets the frame's reliability, because one serious problem is enough. Green ≥ 70, amber 40–69, red &lt; 40.</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Measures</th>
+<th>Healthy → bad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thermal contrast</td>
+<td>How much small spots stand out from their surroundings</td>
+<td>0.016 → 0.001</td>
+</tr>
+<tr>
+<td>Sensor noise</td>
+<td>Pixel-to-neighbour jumps; column stripes</td>
+<td>noise 0.012 → 0.04; stripes 0.008 → 0.02</td>
+</tr>
+<tr>
+<td>Hot-spot saturation</td>
+<td>Share of pixels at maximum brightness</td>
+<td>2% → 15%</td>
+</tr>
+<tr>
+<td>Altitude</td>
+<td>My measured daytime detection rate at that altitude</td>
+<td>90% → 60% found</td>
+</tr>
+<tr>
+<td>Blur</td>
+<td>Sharpness compared with this flight's own last 3 s</td>
+<td>85% → 55% of recent sharpness</td>
+</tr>
+<tr>
+<td>Drone turn</td>
+<td>How far the view shifted since the last frame</td>
+<td>6 px → 15 px</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Why blur is relative:</strong> an absolute blur measure fired on sharp frames with straight lines (field edges). See mistake 2.</li>
+<li><strong>Why altitude uses daytime rates:</strong> these videos don't record day or night, so the cautious choice is used.</li>
+<li><strong>Origin:</strong> the contrast, noise and saturation checks were first built and tuned on still images (504 test cases), then reused for video.</li>
+</ul>
+<h3 id="77-blind-spot-reporting">7.7 Blind-spot reporting</h3>
+<ul>
+<li><strong>Last-seen markers:</strong> when a target followed for at least 2 s disappears away from the image edge (more than 24 px from it), a dashed circle stays at its last ground position, moved with the camera correction each frame, for up to 8 s. Orange = lost while reliability was below 70; grey = lost in good conditions.</li>
+<li><strong>Unreliable periods:</strong> frames below 70, merged when gaps are under 1 s, kept if at least 0.5 s long; labelled by their most common cause.</li>
+<li><strong>Flight reliability report:</strong> share of flight time reliable, list of unreliable periods (click to replay), list of targets lost in view (click to replay).</li>
+</ul>
+<h3 id="78-searched-vs-actually-seen-coverage-map">7.8 Searched vs actually seen (coverage map)</h3>
+<ul>
+<li><strong>What:</strong> a map of the ground the flight covered, coloured by how well each spot was actually seen, plus a re-scan list.</li>
+<li><strong>Why:</strong> a commander asks "did we check that area?" The flight path says yes; the map says whether the camera could actually see there. "Flew over it" is not the same as "saw it".</li>
+<li><strong>How (simply):</strong> line up each frame with the previous one (shift, rotation and scale), chain those so every frame has a place on one big map, and paint each frame's image there. For every spot on the map, count how many frames saw it and how reliable those frames were.</li>
+<li><strong>Colours:</strong> green = in view for at least 0.5 s (4 frames) with reliability 70+; amber = in view at least 0.5 s but only with reliability 40–69; red = flown over but never in view long enough in usable conditions.</li>
+<li><strong>Re-scan list:</strong> joined-up red patches become <strong>priority 1</strong> (never seen in usable conditions), amber patches <strong>priority 2</strong> (seen only in weak conditions). Patches under 1% of the flown area are ignored (thin edge slivers). Each comes with the time it was in view and the most common cause.</li>
+<li><strong>In the portal:</strong> the white box shows the camera's current view moving over the map; the dashed line is the path so far; crosses mark lost targets. Clicking anywhere jumps the video to the best view of that spot.</li>
+<li><strong>Why shift + rotation + scale and not the full homography:</strong> chaining hundreds of full homographies lets tiny tilt errors grow until the map explodes (one flight reached 21,000 px wide). The simpler model is less exact for tilted cameras but stays stable.</li>
+<li><strong>Settings:</strong> <code>MIN_FRAMES = 4</code>, <code>MIN_AREA = 1%</code>, map at most 900 px on its longest side, a 3 px frame border skipped to avoid dark seams.</li>
+<li><strong>Fails when:</strong> fast turns leave a visible seam; long flights drift; there is no GPS, so the map is not in metres. With the drone's GPS and camera angle, the same idea gives a real map.</li>
+<li><strong>Likely question:</strong> <em>"Isn't this just a mosaic?"</em> — The stitching is a standard technique. What is new is colouring the ground by how reliably it was seen and turning that into a re-scan list.</li>
+</ul>
+<h3 id="79-colour-palettes-and-the-hottest-spot">7.9 Colour palettes and the hottest spot</h3>
+<ul>
+<li><strong>Palettes:</strong> White-hot (the original image), Black-hot (inverted) and Ironbow (the purple-orange-yellow look on commercial drone screens). Done in the browser with a 256-colour lookup table.</li>
+<li><strong>The AI never sees the colours.</strong> It was trained on grayscale and always runs on the original image. Palettes only help the operator's eyes.</li>
+<li><strong>Hottest spot:</strong> the brightest area of each frame after a 15 px blur (so a single noisy pixel can't win), shown as a yellow crosshair with its brightness out of 255.</li>
+<li><strong>Brightness is not temperature.</strong> HIT-UAV videos are not radiometric (they don't store degrees per pixel), so it means "warmest compared with the rest of this frame". By day it is often a sun-heated roof or road.</li>
+<li><strong>Likely question:</strong> <em>"Can it show temperature?"</em> — Not with this data. A radiometric camera (e.g. the kind on enterprise thermal drones) stores degrees per pixel; with that, the same marker could show °C and alert on a heat threshold.</li>
+</ul>
+<hr />
+<h2 id="8-measurements-and-results">8. Measurements and results</h2>
+<h3 id="81-detector-on-579-unseen-test-images">8.1 Detector on 579 unseen test images</h3>
+<table>
+<thead>
+<tr>
+<th>Confidence setting</th>
+<th>Recall (targets found)</th>
+<th>Precision (alarms correct)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.25 (used)</td>
+<td>91.1% of 4,780</td>
+<td>87.8% of 4,958 alarms</td>
+</tr>
+<tr>
+<td>0.40 (stricter)</td>
+<td>84.6%</td>
+<td>94.7%</td>
+</tr>
+</tbody>
+</table>
+<p>Lower setting = catch more, more false alarms. For surveillance, catching more usually matters more.</p>
+<h3 id="82-detection-by-altitude-same-test-set-no-simulation">8.2 Detection by altitude (same test set, no simulation)</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>60 m</th>
+<th>70 m</th>
+<th>80 m</th>
+<th>90 m</th>
+<th>100 m</th>
+<th>110 m</th>
+<th>120 m</th>
+<th>130 m</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Day</td>
+<td>94%</td>
+<td>87%</td>
+<td>94%</td>
+<td>–</td>
+<td>85%</td>
+<td>76%</td>
+<td>96%</td>
+<td>73%</td>
+</tr>
+<tr>
+<td>Night</td>
+<td>95%</td>
+<td>87%</td>
+<td>91%</td>
+<td>83%</td>
+<td>89%</td>
+<td>92%</td>
+<td>91%</td>
+<td>95%</td>
+</tr>
+</tbody>
+</table>
+<p>At 110–130 m: about 84% by day vs 93% at night. The trend is not smooth (scenes and image counts differ per altitude), so say "by day it tends to drop at height".</p>
+<h3 id="83-what-bad-conditions-do-to-the-detector-simulated-on-24-real-test-frames">8.3 What bad conditions do to the detector (simulated on 24 real test frames)</h3>
+<p>Share of real targets still found, average:</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>25%</th>
+<th>50%</th>
+<th>75%</th>
+<th>100% strength</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>None (clean)</td>
+<td>90%</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Thermal crossover</td>
+<td>92%</td>
+<td>83%</td>
+<td>47%</td>
+<td>5%</td>
+</tr>
+<tr>
+<td>Fog / rain</td>
+<td>86%</td>
+<td>76%</td>
+<td>41%</td>
+<td>10%</td>
+</tr>
+<tr>
+<td>Sensor noise</td>
+<td>79%</td>
+<td>35%</td>
+<td>15%</td>
+<td>2%</td>
+</tr>
+<tr>
+<td>Hot-spot</td>
+<td>76%</td>
+<td>60%</td>
+<td>39%</td>
+<td>17%</td>
+</tr>
+<tr>
+<td>Shake / blur</td>
+<td>66%</td>
+<td>36%</td>
+<td>21%</td>
+<td>10%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="84-does-the-image-trust-score-catch-failures-failure-ai-found-under-40-of-targets">8.4 Does the image trust score catch failures? ("failure" = AI found under 40% of targets)</h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Cases</th>
+<th>Failures caught (amber/red)</th>
+<th>False "all clear"</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tuning frames (24)</td>
+<td>504</td>
+<td>221 of 226</td>
+<td>5</td>
+<td>Thresholds were tuned here, so optimistic</td>
+</tr>
+<tr>
+<td><strong>New frames (24, never used for tuning)</strong></td>
+<td>504</td>
+<td><strong>205 of 209</strong></td>
+<td><strong>4</strong></td>
+<td>Correlation 0.55; over-cautious: only 13 of 24 untouched frames green; 58 cases red while the AI still found ≥ 80%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="85-do-video-warnings-match-real-losses">8.5 Do video warnings match real losses?</h3>
+<p>Across the five flights, a "loss" = a target followed for ≥ 2 s vanishing away from the image edge.
+- Unreliable periods: 17 losses in 3.3 target-minutes → about 5.2 per target-minute.
+- Reliable periods: 109 losses in 38.4 target-minutes → about 2.8 per target-minute.
+- <strong>Ratio: about 1.8× more losses when the system said "unreliable".</strong>
+- Caveats: small sample; no answer key, so a loss could also be a real exit behind a building; most losses on the running track happen in good conditions (tracker ID breaks).</p>
+<h3 id="86-per-flight">8.6 Per flight</h3>
+<table>
+<thead>
+<tr>
+<th>Flight</th>
+<th>Length</th>
+<th>Tracks</th>
+<th>Reliable time</th>
+<th>Unreliable periods</th>
+<th>Lost in view (in bad conditions)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Walkers, 70 m, 90°</td>
+<td>32.8 s</td>
+<td>21</td>
+<td>100%</td>
+<td>none</td>
+<td>5 (0)</td>
+</tr>
+<tr>
+<td>Running track, 60 m, 30°</td>
+<td>139.3 s</td>
+<td>201</td>
+<td>97%</td>
+<td>2 blur, 3 fast turns</td>
+<td>102 (7)</td>
+</tr>
+<tr>
+<td>Parking lot, 60 m, 40°</td>
+<td>28.9 s</td>
+<td>73</td>
+<td>47%</td>
+<td>low contrast 0–6.7 s; fast turns 12.9–17.5, 18.9–20.7, 24.0–25.9 s</td>
+<td>15 (8)</td>
+</tr>
+<tr>
+<td>Roadside, 120 m, 30°</td>
+<td>28.8 s</td>
+<td>22</td>
+<td>97%</td>
+<td>1 fast turn</td>
+<td>3 (1)</td>
+</tr>
+<tr>
+<td>Open ground, 130 m, 60°</td>
+<td>34.5 s</td>
+<td>14</td>
+<td>0%</td>
+<td>altitude (daytime assumption)</td>
+<td>1 (1)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="87-searched-vs-actually-seen-coverage-map">8.7 Searched vs actually seen (coverage map)</h3>
+<p>Share of the ground each flight flew over:</p>
+<table>
+<thead>
+<tr>
+<th>Flight</th>
+<th>Seen reliably</th>
+<th>Weak only</th>
+<th>Not really seen</th>
+<th>Re-scan list</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Walkers, 70 m</td>
+<td>99.8%</td>
+<td>0%</td>
+<td>0.2%</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Running track, 60 m</td>
+<td>99.5%</td>
+<td>0%</td>
+<td>0.5%</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Parking lot, 60 m</td>
+<td>72.2%</td>
+<td>26.6%</td>
+<td>1.3%</td>
+<td>A (priority 2): 26% of ground, low contrast, 0–5.6 s</td>
+</tr>
+<tr>
+<td>Roadside, 120 m</td>
+<td>99.3%</td>
+<td>0%</td>
+<td>0.7%</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Open ground, 130 m</td>
+<td>0%</td>
+<td>55.7%</td>
+<td>44.3%</td>
+<td>A (priority 1): 43%, fast turn, 7.9–10.1 s · B (priority 2): 39%, altitude, 17.1–23.9 s · C (priority 2): 17%, fast turn, 0–3.9 s</td>
+</tr>
+</tbody>
+</table>
+<p>What this shows:
+- <strong>Parking lot:</strong> the fast turns later in the flight did <strong>not</strong> create a red area, because that ground had already been seen well. Only the start, seen in low contrast, needs another look. The time-based report (47% reliable) and the ground-based map (72% seen reliably) answer different questions.
+- <strong>Open ground:</strong> the drone flew over the whole arc, but 44% of it was never seen in usable conditions, mainly during the fast turn.
+- Caveat: the map is stitched from video (no GPS), and the amber at 130 m depends on the daytime altitude assumption.</p>
+<hr />
+<h2 id="9-mistakes-found-and-fixed">9. Mistakes found and fixed</h2>
+<h3 id="91-65-parked-cars-marked-moving">9.1 65 parked cars marked "moving"</h3>
+<ul>
+<li><strong>Seen:</strong> in the parking-lot flight, 65 of 73 tracked cars showed as moving.</li>
+<li><strong>Cause:</strong> a frame-to-frame rule (about half a pixel per frame) was too sensitive; in a fast turn the camera correction is imperfect and boxes wobble by a pixel or two.</li>
+<li><strong>Fix:</strong> judge movement over 1.5 s with chained camera correction, a size-aware threshold, and a 3-frame hold.</li>
+<li><strong>Result:</strong> 1 of 73.</li>
+</ul>
+<h3 id="92-sharp-frames-marked-blurred">9.2 Sharp frames marked "blurred"</h3>
+<ul>
+<li><strong>Seen:</strong> 353 frames of the running track flagged as blurred, but the drone was turning fast in only 14.</li>
+<li><strong>Cause:</strong> the blur check looked for edges much stronger in one direction; a straight field edge looks like that too.</li>
+<li><strong>Fix:</strong> compare sharpness with the same flight's last 3 s, and add a separate fast-turn check.</li>
+</ul>
+<h3 id="93-a-result-that-looked-better-than-it-was">9.3 A result that looked better than it was</h3>
+<ul>
+<li><strong>Seen:</strong> losses in bad conditions looked 2.5× more frequent.</li>
+<li><strong>Cause:</strong> during fast turns, blur made the detector create short fake "bicycle" tracks that then vanished, inflating losses in bad conditions.</li>
+<li><strong>Fix:</strong> count only targets followed for at least 2 s.</li>
+<li><strong>Result:</strong> honest ratio 1.8×.</li>
+</ul>
+<p><strong>Lesson:</strong> an impressive number can be wrong. Check results against the video before believing them.</p>
+<hr />
+<h2 id="10-limitations-say-these-before-anyone-asks">10. Limitations (say these before anyone asks)</h2>
+<ol>
+<li>Tracking accuracy (ID switches, IDF1) is <strong>not measured</strong>: the videos have no answer key.</li>
+<li>Bad conditions on still images are <strong>simulated</strong>; altitude and day/night are real.</li>
+<li>Civilian scenes; no military terrain or vehicles.</li>
+<li>The trust score is <strong>over-cautious</strong> (about half of normal frames not green).</li>
+<li>Detector trained only 8 epochs on a CPU.</li>
+<li>Results are computed in advance; <strong>not run live</strong> or on drone hardware.</li>
+<li>Speeds are in pixels per second, not metres per second.</li>
+<li>Videos don't record day or night; altitude check assumes daytime.</li>
+<li>Small samples for the "1.8×" result.</li>
+<li>The homography assumes flat ground; tall buildings cause small errors.</li>
+<li>The coverage map is stitched from video, not GPS: not in metres, and fast turns can leave seams.</li>
+<li>The hottest spot is brightness, not temperature; these videos are not radiometric.</li>
+</ol>
+<hr />
+<h2 id="11-the-five-flights-what-each-one-shows">11. The five flights — what each one shows</h2>
+<ul>
+<li><strong>Walkers (70 m, straight down):</strong> the clean case. A group walking; IDs stay; all green.</li>
+<li><strong>Running track (60 m):</strong> many people for over 2 minutes; shows ID breaks even in good conditions — a tracker weakness, not a conditions problem.</li>
+<li><strong>Parking lot (60 m):</strong> the best demo. Parked cars correctly still; low-contrast start (amber); fast turns (red, "uncertain"); orange last-seen circles; the flight report shows 47% reliable.</li>
+<li><strong>Roadside (120 m):</strong> small targets; mostly reliable; one brief fast turn.</li>
+<li><strong>Open ground (130 m):</strong> few, tiny targets; amber the whole flight because of altitude by daytime rates. Best coverage-map demo: 44% of the arc was flown over but never really seen.</li>
+</ul>
+<hr />
+<h2 id="12-how-to-demo-and-present">12. How to demo and present</h2>
+<h3 id="121-portal-walkthrough-about-2-minutes">12.1 Portal walkthrough (about 2 minutes)</h3>
+<ol>
+<li>Press <strong>Take the tour</strong> once yourself before presenting, to learn the screen.</li>
+<li>Open <strong>Parking lot, fast turn</strong>. Press Play.</li>
+<li>Point to the <strong>blue boxes</strong>: parked cars correctly "not moving".</li>
+<li>At about 13 s: the panel turns <strong>red</strong>, "Drone turning fast"; the chip says "moving/still uncertain".</li>
+<li>At about 19 s: <strong>orange dashed circles</strong> — targets lost during bad conditions, pinned to the ground.</li>
+<li>Scroll to the <strong>Flight reliability report</strong>: 47% reliable; click a red period to replay it.</li>
+<li>Open <strong>Open ground at 130 m</strong> and scroll to <strong>Searched vs actually seen</strong>: the drone flew the whole arc, but area A (the fast turn) was never really seen. Click A in the re-scan list to replay it.</li>
+<li>Scroll to <strong>Evidence</strong>: read the four numbers, each with its caveat.</li>
+</ol>
+<h3 id="122-five-minute-presentation">12.2 Five-minute presentation</h3>
+<ol>
+<li><strong>Problem (30 s):</strong> an empty screen looks the same as a blind camera.</li>
+<li><strong>Demo (2 min):</strong> as above.</li>
+<li><strong>Evidence (1 min):</strong> 91% / 88%; day vs night at height; 205 of 209 on new frames; 1.8×.</li>
+<li><strong>What's new, what's not (30 s):</strong> section 3.4.</li>
+<li><strong>Limits and next steps (30 s):</strong> tracking accuracy and over-caution next.</li>
+<li><strong>Ask (30 s):</strong> is this useful, and what real footage could it be tested on?</li>
+</ol>
+<h3 id="123-backup">12.3 Backup</h3>
+<p>Keep a 2-minute screen recording of the demo and screenshots offline, in case a laptop blocks the file.</p>
+<hr />
+<h2 id="13-question-bank">13. Question bank</h2>
+<h3 id="the-idea">The idea</h3>
+<ul>
+<li><strong>What does it do, in one line?</strong> Tracks moving people and vehicles in thermal drone video and reports where and when it could not be trusted.</li>
+<li><strong>What's new?</strong> The blind-spot reporting and the measurement of whether its warnings match real losses. Detection and tracking are existing tools.</li>
+<li><strong>ideaForge already sells tracking — why build this?</strong> Buyers compare tracking features. Mine adds knowing when tracking is unreliable, which I did not see advertised.</li>
+<li><strong>Who would use it?</strong> Surveillance, border watch, search and rescue — anywhere a missed person is costly.</li>
+<li><strong>Why thermal and not normal camera?</strong> Military drones rely on thermal at night; people and engines stand out by heat.</li>
+<li><strong>Did you invent the algorithm?</strong> No. I used YOLO, ByteTrack and OpenCV, and built the reliability layer and the tests.</li>
+<li><strong>Did you write the code yourself?</strong> I wrote it with help from an AI assistant, and I'm rebuilding the core steps and running my own experiments.</li>
+</ul>
+<h3 id="the-data">The data</h3>
+<ul>
+<li><strong>What dataset?</strong> HIT-UAV, a public thermal drone dataset from Harbin Institute of Technology, 2023.</li>
+<li><strong>How big?</strong> 2,898 images (2,029 / 290 / 579), 4,780 labelled targets in the test set, five flight videos.</li>
+<li><strong>Is it allowed to use?</strong> Yes, CC BY 4.0 with credit.</li>
+<li><strong>It's civilian — does it apply to military drones?</strong> The checks measure the image and flight, not what the target is. Mission footage is the real test.</li>
+<li><strong>How do you know day or night?</strong> From the file name code (0 day, 1 night), defined in the dataset's scenario file.</li>
+</ul>
+<h3 id="detection">Detection</h3>
+<ul>
+<li><strong>What is YOLO?</strong> An AI that finds objects in an image in one pass and outputs boxes with class and confidence.</li>
+<li><strong>Why nano?</strong> Small and fast enough for drone hardware.</li>
+<li><strong>What is recall? Precision?</strong> Recall: share of real targets found. Precision: share of alarms that were real.</li>
+<li><strong>Your numbers?</strong> 91% recall, 88% precision on 579 unseen images at confidence 0.25.</li>
+<li><strong>Why not higher precision?</strong> At 0.40 it's 95% precision but recall drops to 85%. For surveillance I prefer catching more.</li>
+<li><strong>How long did training take?</strong> 8 epochs, about 1.5 hours on a laptop-class CPU.</li>
+</ul>
+<h3 id="stabilising-and-motion">Stabilising and motion</h3>
+<ul>
+<li><strong>Why line up frames?</strong> The drone moves, so everything appears to move until the ground is held still.</li>
+<li><strong>What is a homography?</strong> A rule that shifts, rotates, stretches and tilts one image onto another of the same flat scene.</li>
+<li><strong>What is RANSAC?</strong> It finds the rule most point matches agree with and ignores wrong matches.</li>
+<li><strong>What is the motion map?</strong> White where brightness changed after alignment, meaning real movement.</li>
+<li><strong>What breaks it?</strong> Fast turns, tall buildings, trees in wind.</li>
+</ul>
+<h3 id="tracking">Tracking</h3>
+<ul>
+<li><strong>What does ByteTrack do?</strong> Links boxes across frames so each target keeps one ID, and gives faint boxes a second chance to match.</li>
+<li><strong>What is an ID switch?</strong> A target wrongly gets a new number or swaps numbers with another.</li>
+<li><strong>What is IDF1?</strong> How consistently each real target kept one correct ID, 0–100.</li>
+<li><strong>Your tracking accuracy?</strong> Not measured yet — no answer key. That's my next step.</li>
+<li><strong>How do you decide moving vs still?</strong> Movement over 1.5 s after removing drone motion, above a size-aware threshold, held for 3 frames.</li>
+</ul>
+<h3 id="reliability-and-blind-spots">Reliability and blind spots</h3>
+<ul>
+<li><strong>How is the trust score calculated?</strong> Six checks, each 0–100; the weakest sets the score. Green ≥ 70, amber 40–69, red &lt; 40.</li>
+<li><strong>Why the weakest and not the average?</strong> One serious problem — e.g. a fast turn — is enough to make the output unreliable; an average would hide it.</li>
+<li><strong>How do you know the warnings mean anything?</strong> On new frames, 205 of 209 AI failures were flagged. In videos, targets were lost about 1.8× more often during flagged periods.</li>
+<li><strong>What's the weakness of the trust score?</strong> Over-cautious: about half of normal frames aren't green. Reducing false alarms is my next task.</li>
+<li><strong>What is a last-seen marker?</strong> When a followed target vanishes mid-view, a circle stays at its last ground position for up to 8 s.</li>
+<li><strong>Why pin it to the ground?</strong> Because the drone moves; the marker moves with the camera correction so it stays over the same spot.</li>
+</ul>
+<h3 id="coverage-map-colours-and-hottest-spot">Coverage map, colours and hottest spot</h3>
+<ul>
+<li><strong>What is the coverage map?</strong> A map of the ground the drone flew over, coloured by how reliably each spot was seen, with a list of areas to re-scan.</li>
+<li><strong>Why does it matter?</strong> "The drone flew over it" is not the same as "we saw it". It tells the team where to look again, and why.</li>
+<li><strong>How is it made?</strong> Frames are lined up (shift, rotation, scale), chained onto one map, and each spot is coloured by how long and how reliably it was in view.</li>
+<li><strong>Is it in metres?</strong> No; there is no GPS in these clips. With the drone's GPS it would be.</li>
+<li><strong>Is the hottest spot a temperature?</strong> No, brightness. The videos don't store degrees.</li>
+<li><strong>Do the colours help the AI?</strong> No. Display only; the AI sees the original grayscale image.</li>
+<li><strong>Can it detect animals?</strong> Not now: HIT-UAV has 4 classes. Adding animals means retraining with labelled thermal animal data (e.g. BIRDSAI), which is a next step.</li>
+</ul>
+<h3 id="results-and-honesty">Results and honesty</h3>
+<ul>
+<li><strong>What went wrong along the way?</strong> Section 9: parked cars as moving; a blur check fooled by straight lines; an inflated result from fake tracks.</li>
+<li><strong>What is not proven?</strong> Section 10.</li>
+<li><strong>Is it real-time?</strong> Not shown. Results were computed in advance; the next step is measuring speed on a drone computer.</li>
+<li><strong>Can it run on a drone?</strong> The image checks are cheap and the detector is the smallest YOLO, but it is not tested on drone hardware.</li>
+<li><strong>What would you do with more time?</strong> Measure tracking accuracy, reduce false alarms, test on real mission footage, test speed on a Jetson.</li>
+</ul>
+<hr />
+<h2 id="14-glossary">14. Glossary</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thermal / infrared camera</td>
+<td>Sees heat instead of light</td>
+</tr>
+<tr>
+<td>Thermal crossover</td>
+<td>Ground and targets at similar temperature; targets fade</td>
+</tr>
+<tr>
+<td>Detector</td>
+<td>AI that finds objects and draws boxes</td>
+</tr>
+<tr>
+<td>YOLO</td>
+<td>"You Only Look Once" — a fast detector family</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>How sure the detector is, 0–1</td>
+</tr>
+<tr>
+<td>Non-maximum suppression</td>
+<td>Merging overlapping boxes for the same object</td>
+</tr>
+<tr>
+<td>Epoch</td>
+<td>One full pass over the training images</td>
+</tr>
+<tr>
+<td>Recall</td>
+<td>Share of real targets found</td>
+</tr>
+<tr>
+<td>Precision</td>
+<td>Share of alarms that were real</td>
+</tr>
+<tr>
+<td>mAP</td>
+<td>A standard detection score averaging precision over recall levels</td>
+</tr>
+<tr>
+<td>Homography</td>
+<td>Rule that lines up two images of a flat scene</td>
+</tr>
+<tr>
+<td>Optical flow</td>
+<td>How points move between frames</td>
+</tr>
+<tr>
+<td>RANSAC</td>
+<td>Robust fitting that ignores wrong matches</td>
+</tr>
+<tr>
+<td>Frame differencing</td>
+<td>Subtracting frames to find change</td>
+</tr>
+<tr>
+<td>Tracker</td>
+<td>Keeps one ID per target across frames</td>
+</tr>
+<tr>
+<td>ByteTrack</td>
+<td>A published tracker that also uses low-confidence boxes</td>
+</tr>
+<tr>
+<td>Kalman filter</td>
+<td>Predicts where a target will be next</td>
+</tr>
+<tr>
+<td>IoU</td>
+<td>Overlap between two boxes (intersection over union)</td>
+</tr>
+<tr>
+<td>ID switch</td>
+<td>A target wrongly changes ID</td>
+</tr>
+<tr>
+<td>IDF1 / MOTA</td>
+<td>Standard tracking scores</td>
+</tr>
+<tr>
+<td>Hysteresis</td>
+<td>Requiring a change to hold for a few frames before switching</td>
+</tr>
+<tr>
+<td>Ground station (GCS)</td>
+<td>The operator's screen and controls</td>
+</tr>
+<tr>
+<td>Parallax</td>
+<td>Tall objects shift differently from the ground when the camera moves</td>
+</tr>
+<tr>
+<td>Coverage map</td>
+<td>Map of the ground covered, coloured by how reliably each spot was seen</td>
+</tr>
+<tr>
+<td>Mosaic / stitching</td>
+<td>Joining many frames into one big picture of the ground</td>
+</tr>
+<tr>
+<td>Similarity transform</td>
+<td>Shift + rotation + scale between two images (simpler than a homography)</td>
+</tr>
+<tr>
+<td>Radiometric camera</td>
+<td>Thermal camera that stores the temperature of each pixel</td>
+</tr>
+<tr>
+<td>Colour palette (Ironbow, white-hot, black-hot)</td>
+<td>Ways of colouring a grayscale thermal image for the eye</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="15-your-plan-from-tomorrow">15. Your plan from tomorrow</h2>
+<h3 id="week-1-make-it-yours-and-safe">Week 1 — make it yours and safe</h3>
+<ul>
+<li><strong>Day 1:</strong> Push the repository to GitHub; turn on Pages. Ask your mentor: does Raphe already have tracking, and is sharing this personal project fine?</li>
+<li><strong>Day 2:</strong> Read sections 1–5. Take the portal tour twice.</li>
+<li><strong>Day 3:</strong> Read sections 6–7 with the portal open. For each step, find it on screen.</li>
+<li><strong>Day 4:</strong> Read sections 8–11. Write the four evidence numbers from memory.</li>
+<li><strong>Day 5:</strong> Practise section 13 out loud; pass the quiz 8/8.</li>
+<li><strong>Day 6–7:</strong> Install Python and Node on your Mac; run README steps 1 and 3 (dataset, detector score). Check you get 91% / 88%.</li>
+</ul>
+<h3 id="week-2-rebuild-the-core">Week 2 — rebuild the core</h3>
+<ul>
+<li>Run <code>process.py</code>, <code>post.py</code>, <code>reliability.py</code> on one clip. Compare with the portal's numbers.</li>
+<li>Change one setting (e.g. motion threshold 16 → 20) and see what changes. Write it down.</li>
+</ul>
+<h3 id="weeks-34-your-own-contribution">Weeks 3–4 — your own contribution</h3>
+<ul>
+<li><strong>Task A, reduce false alarms:</strong> in <code>thermal.js</code>, adjust the contrast check thresholds; re-run the trust test on the new frames; aim to keep failures caught ≥ 200 of 209 while raising green normal frames above 13 of 24. Record before/after.</li>
+<li><strong>Task B, tracking accuracy:</strong> label about 150 frames of the Walkers clip (free tool: CVAT), then count ID switches and missed targets.</li>
+<li><strong>Coverage map check:</strong> change <code>MIN_FRAMES</code> from 4 to 8 (1 s) in <code>coverage.py</code>, re-run it, and write down how the green share and re-scan list change. Be ready to explain why you chose your value.</li>
+<li>Commit each change to GitHub with a clear message.</li>
+</ul>
+<h3 id="week-5-update-results">Week 5 — update results</h3>
+<ul>
+<li>Put your new numbers into the portal, README and this document.</li>
+</ul>
+<h3 id="week-6-presentation">Week 6 — presentation</h3>
+<ul>
+<li>5 slides; 2-minute backup recording; rehearse twice with family; present to your mentor.</li>
+</ul>
+<h3 id="week-7-present-and-ask">Week 7 — present and ask</h3>
+<ul>
+<li>Present to your mentor, then Nitin sir if your mentor agrees. Ask what real footage it could be tested on.</li>
+</ul>
+<hr />
+<h2 id="16-where-to-change-things">16. Where to change things</h2>
+<table>
+<thead>
+<tr>
+<th>What</th>
+<th>File</th>
+<th>Setting</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trust thresholds</td>
+<td><code>src/thermal.js</code></td>
+<td><code>lin(value, good, bad)</code> in <code>CHECKS</code></td>
+</tr>
+<tr>
+<td>Moving rule</td>
+<td><code>src/post.py</code></td>
+<td><code>WINDOW_S</code>, <code>tol</code>, <code>HYST</code></td>
+</tr>
+<tr>
+<td>Shortest track</td>
+<td><code>src/post.py</code></td>
+<td><code>MIN_TRACK_S</code></td>
+</tr>
+<tr>
+<td>Tracker</td>
+<td><code>src/thermal_track.yaml</code></td>
+<td><code>track_buffer</code>, <code>match_thresh</code></td>
+</tr>
+<tr>
+<td>Blur and turn checks</td>
+<td><code>src/reliability.py</code></td>
+<td><code>lin(...)</code> for <code>blur</code>, <code>turn</code></td>
+</tr>
+<tr>
+<td>Last-seen rules</td>
+<td><code>src/reliability.py</code></td>
+<td><code>GHOST_S</code>, <code>EDGE</code>, 2 s minimum</td>
+</tr>
+<tr>
+<td>Detector confidence</td>
+<td><code>src/process.py</code></td>
+<td><code>conf=</code></td>
+</tr>
+<tr>
+<td>Coverage map</td>
+<td><code>src/coverage.py</code></td>
+<td><code>MIN_FRAMES</code>, <code>MIN_AREA</code>, <code>MAP_MAX</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="17-sources">17. Sources</h2>
+<ul>
+<li>HIT-UAV dataset: https://github.com/suojiashun/HIT-UAV-Infrared-Thermal-Dataset — Suo et al., <em>Scientific Data</em> 10, 227 (2023).</li>
+<li>HIT-UAV paper (arXiv): https://arxiv.org/abs/2204.03245</li>
+<li>BIRDSAI (thermal tracking dataset for next steps): Bondi et al., WACV 2020.</li>
+<li>ideaForge defence solutions (competitor features): https://us.ideaforgetech.com/defense-solutions/</li>
+<li>Ultralytics YOLOv8 (AGPL-3.0): https://github.com/ultralytics/ultralytics</li>
+<li>ByteTrack: Zhang et al., "ByteTrack: Multi-Object Tracking by Associating Every Detection Box", ECCV 2022.</li>
+</ul></main>
+</div></body></html>
